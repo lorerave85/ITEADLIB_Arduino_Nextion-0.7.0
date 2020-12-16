@@ -156,6 +156,67 @@ __return:
     return ret;
 }
 
+uint16_t recvRetStringReal(String &response, uint32_t timeout,bool recv_flag){
+
+    #if defined ESP8266
+        yield();
+    #endif
+
+    uint16_t ret = 0;
+    uint8_t c = 0;
+	uint8_t nr_of_FF_bytes = 0;
+    long start;
+    bool exit_flag = false;
+	bool ff_flag = false;
+	if(timeout != 500)
+		dbSerialPrintln("timeout setting serial read: " + String(timeout));
+
+    start = millis();
+
+    while (millis() - start <= timeout){
+
+        while (nexSerial.available()){
+
+            c = nexSerial.read(); 
+            if(c == 0){
+                continue;
+            }
+
+			if (c == 0xFF)
+				nr_of_FF_bytes++;
+			else {
+				nr_of_FF_bytes=0;
+				ff_flag = false;
+			}
+			
+			if(nr_of_FF_bytes >= 3)
+				ff_flag = true;
+			
+			response += (char)c;
+            
+            if(recv_flag){
+                if(response.indexOf(0x05) != -1){ 
+                    exit_flag = true;
+                } 
+            }
+        }
+        if(exit_flag || ff_flag){
+            break;
+        }
+    }
+	//_printSerialData(false,response);
+
+	// if the exit flag and the ff flag are both not found, than there is a timeout 
+	// if(!exit_flag && !ff_flag)
+		// dbSerialPrintln(F("recvRetString: timeout"));
+
+	if(ff_flag)
+		response = response.substring(0, response.length() -3); // Remove last 3 0xFF 
+
+    ret = response.length();
+    return ret;
+}
+
 /*
  * Send command to Nextion.
  *
@@ -174,6 +235,10 @@ void sendCommand(const char* cmd)
     nexSerial1.write(0xFF);
 }
 
+void sendFlush()
+{
+    nexSerial1.flush();
+}
 
 /*
  * Command is executed successfully. 
