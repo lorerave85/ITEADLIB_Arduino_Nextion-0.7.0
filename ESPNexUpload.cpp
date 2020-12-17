@@ -299,4 +299,5 @@ void ESPNexUpload::_printInfoLine(String line){
 	//dbSerialPrint(F("Status     info: "));
 	//if(line.length() != 0)
 //		dbSerialPrintln(line);
+	Serial.println(line);
 }
