@@ -33,7 +33,7 @@
 #include "NexText.h"
 #include "NexNumber.h"
 #include "NexWaveform.h"
-#include "ESPNexUpload.h"
+//#include "ESPNexUpload.h"
 
 
 #endif /* #ifndef __NEXTION_H__ */
